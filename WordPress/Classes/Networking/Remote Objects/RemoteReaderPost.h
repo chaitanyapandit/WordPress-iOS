@@ -6,6 +6,7 @@
 @interface RemoteReaderPost : NSObject
 
 // Reader Post Model
+@property (nonatomic, strong) NSArray *attachments;
 @property (nonatomic, strong) NSString *authorAvatarURL;
 @property (nonatomic, strong) NSString *authorDisplayName;
 @property (nonatomic, strong) NSString *authorEmail;

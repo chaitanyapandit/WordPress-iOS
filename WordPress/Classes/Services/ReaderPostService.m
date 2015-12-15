@@ -3,12 +3,14 @@
 #import "AccountService.h"
 #import "ContextManager.h"
 #import "DateUtils.h"
+#import "Media.h"
 #import "NSString+Helpers.h"
 #import "NSString+XMLExtensions.h"
 #import "ReaderGapMarker.h"
 #import "ReaderPost.h"
 #import "ReaderPostServiceRemote.h"
 #import "ReaderSiteService.h"
+#import "RemoteMedia.h"
 #import "RemoteReaderPost.h"
 #import "RemoteSourcePostAttribution.h"
 #import "SourcePostAttribution.h"
@@ -957,8 +959,49 @@ static NSString * const SourceAttributionStandardTaxonomy = @"standard-pick";
 
     // assign the topic last.
     post.topic = topic;
-
+    
+    [self createOrReplaceFromRemoteAttachments:remotePost.attachments forPost:post];
+    
     return post;
+}
+
+- (void)createOrReplaceFromRemoteAttachments:(NSArray *)remoteAttachments forPost:(ReaderPost *)post {
+    
+    NSError *error = nil;
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Blog"];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"url like [c] %@", post.blogURL];
+    NSArray *arr = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+    Blog *blog = arr.firstObject;
+    
+    if (blog) {
+        for (RemoteMedia *remoteMedia in remoteAttachments) {
+            
+            NSFetchRequest *mediaFetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Media"];
+            mediaFetchRequest.predicate = [NSPredicate predicateWithFormat:@"mediaID == %@", remoteMedia.mediaID];
+            Media *media = [self.managedObjectContext executeFetchRequest:mediaFetchRequest error:&error].firstObject;
+
+            if (media == nil)
+                media = [NSEntityDescription insertNewObjectForEntityForName:@"Media"
+                                                         inManagedObjectContext:self.managedObjectContext];
+            media.mediaID = remoteMedia.mediaID;
+            media.mediaTypeString = remoteMedia.mimeType;
+            // mediaType generated at runtime from mediaTypeString
+            media.remoteURL = remoteMedia.url.absoluteString;
+            media.shortcode = remoteMedia.shortcode;
+            media.length = remoteMedia.length;
+            media.title = remoteMedia.title;
+            media.filename = remoteMedia.file;
+            media.width = remoteMedia.width;
+            media.height = remoteMedia.height;
+            media.creationDate = remoteMedia.date;
+            media.videopressGUID = remoteMedia.guid.absoluteString;
+            media.desc = remoteMedia.descriptionText;
+            media.remoteThumbnailURL = remoteMedia.remoteThumbnailURL;
+           
+            media.blog = blog;
+            [media addReaderPostsObject:post];
+        }
+    }
 }
 
 - (SourcePostAttribution *)createOrReplaceFromRemoteDiscoverAttribution:(RemoteSourcePostAttribution *)remoteAttribution

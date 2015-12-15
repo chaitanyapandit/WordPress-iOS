@@ -37,6 +37,7 @@ NSString * const ReaderPostStoredCommentTextKey = @"comment";
 @dynamic sortDate;
 @dynamic summary;
 @dynamic comments;
+@dynamic attachments;
 @dynamic tags;
 @dynamic topic;
 @dynamic globalID;

@@ -7,6 +7,7 @@
 @class ReaderCrossPostMeta;
 @class SourcePostAttribution;
 @class Comment;
+@class Media;
 
 extern NSString * const ReaderPostStoredCommentIDKey;
 extern NSString * const ReaderPostStoredCommentTextKey;
@@ -34,6 +35,7 @@ extern NSString * const ReaderPostStoredCommentTextKey;
 @property (nonatomic, strong) NSDate *sortDate;
 @property (nonatomic, strong) NSString *summary;
 @property (nonatomic, strong) NSSet *comments;
+@property (nonatomic, strong) NSSet *attachments;
 @property (nonatomic, readonly, strong) NSURL *featuredImageURL;
 @property (nonatomic, strong) NSString *tags;
 @property (nonatomic, strong) ReaderAbstractTopic *topic;
@@ -67,6 +69,11 @@ extern NSString * const ReaderPostStoredCommentTextKey;
 - (void)removeCommentsObject:(Comment *)value;
 - (void)addComments:(NSSet *)values;
 - (void)removeComments:(NSSet *)values;
+
+- (void)addAttachmentsObject:(Media *)value;
+- (void)removeAttachmentsObject:(Media *)value;
+- (void)addAttachments:(NSSet *)values;
+- (void)removeAttachments:(NSSet *)values;
 
 @end
 

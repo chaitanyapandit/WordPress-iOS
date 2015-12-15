@@ -2,6 +2,7 @@
 
 #import "DateUtils.h"
 #import "DisplayableImageHelper.h"
+#import "RemoteMedia.h"
 #import "RemoteReaderPost.h"
 #import "RemoteSourcePostAttribution.h"
 #import "ReaderTopicServiceRemote.h"
@@ -58,6 +59,28 @@ NSString * const TagKeyPrimarySlug = @"primaryTagSlug";
 NSString * const TagKeySecondary = @"secondaryTag";
 NSString * const TagKeySecondarySlug = @"secondaryTagSlug";
 
+// Attachment dictionary keys
+NSString * const AttachmentRESTKeyID = @"ID";
+NSString * const AttachmentRESTKeyURL = @"URL";
+NSString * const AttachmentRESTKeyDate = @"date";
+NSString * const AttachmentRESTKeyFile = @"file";
+NSString * const AttachmentRESTKeyExtension = @"extension";
+NSString * const AttachmentRESTKeyTitle = @"title";
+NSString * const AttachmentRESTKeyCaption = @"caption";
+NSString * const AttachmentRESTKeyDescription = @"description";
+NSString * const AttachmentRESTKeyHeight = @"height";
+NSString * const AttachmentRESTKeyWidth = @"width";
+NSString * const AttachmentRESTKeyMIMEType = @"mime_type";
+NSString * const AttachmentRESTKeyGUID = @"guid";
+NSString * const AttachmentRESTKeyPostID = @"post_ID";
+NSString * const AttachmentRESTKeyThumbnails = @"thumbnails";
+NSString * const AttachmentRESTKeyExif = @"exif";
+
+// Thumbnail dictionary Keys
+NSString * const ThumbnailRESTKeyLarge = @"thumbnails";
+NSString * const ThumbnailRESTKeyMedium = @"medium";
+NSString * const ThumbnailRESTKeyThumbnail = @"thumbnail";
+
 // XPost Meta Keys
 NSString * const PostRESTKeyMetadata = @"metadata";
 NSString * const CrossPostMetaKey = @"key";
@@ -66,6 +89,8 @@ NSString * const CrossPostMetaXPostPermalink = @"_xpost_original_permalink";
 NSString * const CrossPostMetaXCommentPermalink = @"xcomment_original_permalink";
 NSString * const CrossPostMetaXPostOrigin = @"xpost_origin";
 NSString * const CrossPostMetaCommentPrefix = @"comment-";
+
+// XPost Meta Keys
 
 static const NSInteger AvgWordsPerMinuteRead = 250;
 static const NSInteger MinutesToReadThreshold = 2;
@@ -258,6 +283,8 @@ static const NSInteger MinutesToReadThreshold = 2;
         post.crossPostMeta = crossPostMeta;
     }
 
+    post.attachments = [self attachmentsFromPostDictionary:dict];
+    
     return post;
 }
 
@@ -472,6 +499,60 @@ static const NSInteger MinutesToReadThreshold = 2;
 }
 
 #pragma mark - Data sanitization methods
+
+/**
+ Generates Attachments as RemoteMedia objects for the post.
+ 
+ @param A dictionary representing a post object from the REST API
+ @return An array containing the attachments as RemoteMedia objects
+ */
+- (NSArray *)attachmentsFromPostDictionary:(NSDictionary *)dict {
+    NSMutableArray *attachments = [NSMutableArray array];
+    
+    NSArray *attachmentDicts = [[dict dictionaryForKeyPath:PostRESTKeyAttachments] allValues];
+    for (NSDictionary *attachmentDict in attachmentDicts) {
+        RemoteMedia *attachment = [self remoteMediaFromDictionary:attachmentDict];
+        [attachments addObject:attachment];
+    }
+    
+    return attachments;
+}
+
+/**
+ Returns a RemoteMedia object from the given dictionary.
+ 
+ @param A dictionary representing a RemoteMedia object from the REST API
+ @return RemoteMedia object created from the properties in dictionary
+ */
+- (RemoteMedia *)remoteMediaFromDictionary:(NSDictionary *)dict
+{
+    RemoteMedia *remoteMedia = [[RemoteMedia alloc] init];
+    remoteMedia.mediaID = [dict numberForKeyPath:AttachmentRESTKeyID];
+    NSString *urlString = [dict stringForKeyPath:AttachmentRESTKeyURL];
+    if (urlString) {
+        remoteMedia.url = [NSURL URLWithString:urlString];
+    }
+    remoteMedia.date = [NSDate dateWithISO8601String:[dict stringForKeyPath:AttachmentRESTKeyDate]];
+    remoteMedia.file = [dict stringForKeyPath:AttachmentRESTKeyFile];
+    remoteMedia.extension = [dict stringForKeyPath:AttachmentRESTKeyExtension] ? :@"unknown";
+    remoteMedia.title = [dict stringForKeyPath:AttachmentRESTKeyTitle];
+    remoteMedia.caption = [dict stringForKeyPath:AttachmentRESTKeyCaption];
+    remoteMedia.descriptionText = [dict stringForKeyPath:AttachmentRESTKeyDescription];
+    remoteMedia.height = [dict numberForKeyPath:AttachmentRESTKeyHeight];
+    remoteMedia.width = [dict numberForKeyPath:AttachmentRESTKeyWidth];
+    remoteMedia.mimeType = [dict stringForKeyPath:AttachmentRESTKeyMIMEType];
+    NSString *guidString = [dict stringForKeyPath:AttachmentRESTKeyGUID];
+    if (guidString) {
+        remoteMedia.guid = [NSURL URLWithString:guidString];
+    }
+    remoteMedia.postID = [dict numberForKeyPath:AttachmentRESTKeyPostID];
+
+    NSDictionary *thumbnails = [dict dictionaryForKeyPath:AttachmentRESTKeyThumbnails];
+    remoteMedia.remoteThumbnailURL = [thumbnails stringForKeyPath:ThumbnailRESTKeyThumbnail];
+    remoteMedia.exif = [dict dictionaryForKeyPath:AttachmentRESTKeyExif];
+    
+    return remoteMedia;
+}
 
 /**
  The v1 API result is inconsistent in that it will return a 0 when there is no author email.

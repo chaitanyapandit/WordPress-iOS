@@ -16,6 +16,7 @@
 @dynamic creationDate;
 @dynamic blog;
 @dynamic posts;
+@dynamic readerPosts;
 @dynamic remoteStatusNumber;
 @dynamic caption;
 @dynamic desc;
