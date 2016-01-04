@@ -1257,6 +1257,11 @@ import Foundation
         navigationController?.pushViewController(controller, animated: true)
     }
 
+    public func readerCell(cell: ReaderPostCardCell, galleryActionForProvider provider: ReaderPostContentProvider) {
+
+        
+    }
+    
     public func readerCell(cell: ReaderPostCardCell, likeActionForProvider provider: ReaderPostContentProvider) {
         let post = provider as! ReaderPost
         toggleLikeForPost(post)

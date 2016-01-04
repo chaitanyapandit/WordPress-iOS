@@ -4,6 +4,7 @@ import Foundation
 {
     func readerCell(cell: ReaderPostCardCell, headerActionForProvider provider: ReaderPostContentProvider)
     func readerCell(cell: ReaderPostCardCell, commentActionForProvider provider: ReaderPostContentProvider)
+    func readerCell(cell: ReaderPostCardCell, galleryActionForProvider provider: ReaderPostContentProvider)
     func readerCell(cell: ReaderPostCardCell, likeActionForProvider provider: ReaderPostContentProvider)
     func readerCell(cell: ReaderPostCardCell, tagActionForProvider provider: ReaderPostContentProvider)
     func readerCell(cell: ReaderPostCardCell, menuActionForProvider provider: ReaderPostContentProvider, fromView sender: UIView)
@@ -37,6 +38,7 @@ import Foundation
 
     // Action buttons
     @IBOutlet private weak var actionButtonRight: UIButton!
+    @IBOutlet private weak var actionButtonCenter: UIButton!
     @IBOutlet private weak var actionButtonLeft: UIButton!
 
     // Layout Constraints
@@ -246,6 +248,7 @@ import Foundation
         WPStyleGuide.applyReaderCardTagButtonStyle(tagButton)
 
         WPStyleGuide.applyReaderCardActionButtonStyle(actionButtonLeft)
+        WPStyleGuide.applyReaderCardActionButtonStyle(actionButtonCenter)
         WPStyleGuide.applyReaderCardActionButtonStyle(actionButtonRight)
     }
 
@@ -469,6 +472,7 @@ import Foundation
 
         var buttons = [
             actionButtonLeft,
+            actionButtonCenter,
             actionButtonRight
         ]
 
@@ -493,6 +497,11 @@ import Foundation
             }
         }
 
+        if contentProvider!.hasAttachments() {
+            let button = buttons.removeLast() as UIButton
+            configureGalleryActionButton(button)
+        }
+        
         resetActionButtons(buttons)
     }
 
@@ -542,6 +551,14 @@ import Foundation
         let title = contentProvider?.commentCount().stringValue
         let image = UIImage(named: "icon-reader-comment")
         let highlightImage = UIImage(named: "icon-reader-comment-highlight")
+        configureActionButton(button, title: title, image: image, highlightedImage: highlightImage, selected:false)
+    }
+    
+    private func configureGalleryActionButton(button: UIButton) {
+        button.tag = CardAction.Gallery.rawValue
+        let title = NSLocalizedString("Gallery", comment: "View Gallery")
+        let image = UIImage(named: "icon-reader-gallery")
+        let highlightImage = UIImage(named: "icon-reader-gallery-highlight")
         configureActionButton(button, title: title, image: image, highlightedImage: highlightImage, selected:false)
     }
 
@@ -606,6 +623,8 @@ import Foundation
         switch tag {
         case .Comment :
             delegate?.readerCell(self, commentActionForProvider: contentProvider!)
+        case .Gallery :
+            delegate?.readerCell(self, galleryActionForProvider: contentProvider!)
         case .Like :
             delegate?.readerCell(self, likeActionForProvider: contentProvider!)
         }
@@ -625,6 +644,7 @@ import Foundation
     private enum CardAction: Int
     {
         case Comment = 1
+        case Gallery
         case Like
     }
 }

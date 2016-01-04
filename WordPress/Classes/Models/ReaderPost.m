@@ -198,6 +198,11 @@ NSString * const ReaderPostStoredCommentTextKey = @"comment";
     return [self featuredImageURL];
 }
 
+- (BOOL)hasAttachments
+{
+    return (self.attachments.count > 0) ? YES : NO;
+}
+
 - (NSString *)likeCountForDisplay
 {
     NSString *likeStr = NSLocalizedString(@"Like", @"Text for the 'like' button. Tapping marks a post in the reader as 'liked'.");

@@ -966,41 +966,32 @@ static NSString * const SourceAttributionStandardTaxonomy = @"standard-pick";
 }
 
 - (void)createOrReplaceFromRemoteAttachments:(NSArray *)remoteAttachments forPost:(ReaderPost *)post {
-    
-    NSError *error = nil;
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Blog"];
-    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"url like [c] %@", post.blogURL];
-    NSArray *arr = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    Blog *blog = arr.firstObject;
-    
-    if (blog) {
-        for (RemoteMedia *remoteMedia in remoteAttachments) {
-            
-            NSFetchRequest *mediaFetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Media"];
-            mediaFetchRequest.predicate = [NSPredicate predicateWithFormat:@"mediaID == %@", remoteMedia.mediaID];
-            Media *media = [self.managedObjectContext executeFetchRequest:mediaFetchRequest error:&error].firstObject;
-
-            if (media == nil)
-                media = [NSEntityDescription insertNewObjectForEntityForName:@"Media"
-                                                         inManagedObjectContext:self.managedObjectContext];
-            media.mediaID = remoteMedia.mediaID;
-            media.mediaTypeString = remoteMedia.mimeType;
-            // mediaType generated at runtime from mediaTypeString
-            media.remoteURL = remoteMedia.url.absoluteString;
-            media.shortcode = remoteMedia.shortcode;
-            media.length = remoteMedia.length;
-            media.title = remoteMedia.title;
-            media.filename = remoteMedia.file;
-            media.width = remoteMedia.width;
-            media.height = remoteMedia.height;
-            media.creationDate = remoteMedia.date;
-            media.videopressGUID = remoteMedia.guid.absoluteString;
-            media.desc = remoteMedia.descriptionText;
-            media.remoteThumbnailURL = remoteMedia.remoteThumbnailURL;
-           
-            media.blog = blog;
-            [media addReaderPostsObject:post];
-        }
+    for (RemoteMedia *remoteMedia in remoteAttachments) {
+        
+        NSError *error = nil;
+        NSFetchRequest *mediaFetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Media"];
+        mediaFetchRequest.predicate = [NSPredicate predicateWithFormat:@"mediaID == %@", remoteMedia.mediaID];
+        Media *media = [self.managedObjectContext executeFetchRequest:mediaFetchRequest error:&error].firstObject;
+        
+        if (media == nil)
+            media = [NSEntityDescription insertNewObjectForEntityForName:@"Media"
+                                                  inManagedObjectContext:self.managedObjectContext];
+        media.mediaID = remoteMedia.mediaID;
+        media.mediaTypeString = remoteMedia.mimeType;
+        // mediaType generated at runtime from mediaTypeString
+        media.remoteURL = remoteMedia.url.absoluteString;
+        media.shortcode = remoteMedia.shortcode;
+        media.length = remoteMedia.length;
+        media.title = remoteMedia.title;
+        media.filename = remoteMedia.file;
+        media.width = remoteMedia.width;
+        media.height = remoteMedia.height;
+        media.creationDate = remoteMedia.date;
+        media.videopressGUID = remoteMedia.guid.absoluteString;
+        media.desc = remoteMedia.descriptionText;
+        media.remoteThumbnailURL = remoteMedia.remoteThumbnailURL;
+        
+        [media addReaderPostsObject:post];
     }
 }
 
