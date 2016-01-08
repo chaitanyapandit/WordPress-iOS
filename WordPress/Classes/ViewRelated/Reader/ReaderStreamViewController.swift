@@ -1258,8 +1258,11 @@ import Foundation
     }
 
     public func readerCell(cell: ReaderPostCardCell, galleryActionForProvider provider: ReaderPostContentProvider) {
-
-        
+        var post = provider as! ReaderPost
+        post = postInMainContext(post)!
+        let controller = ReaderGalleryViewController(post: post)
+        let navCon = UINavigationController(rootViewController: controller)
+        navigationController?.presentViewController(navCon, animated: true, completion: nil)
     }
     
     public func readerCell(cell: ReaderPostCardCell, likeActionForProvider provider: ReaderPostContentProvider) {

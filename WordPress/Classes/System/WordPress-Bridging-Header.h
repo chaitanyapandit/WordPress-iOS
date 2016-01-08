@@ -33,6 +33,7 @@
 #import "PostMetaButton.h"
 
 #import "ReaderCommentsViewController.h"
+#import "ReaderGalleryViewController.h"
 #import "ReaderGapMarker.h"
 #import "ReaderPost.h"
 #import "ReaderPostContentProvider.h"
